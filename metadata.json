@@ -1,0 +1,6 @@
+{
+  "name": "MySpend",
+  "description": "A polished native Android personal expense tracker for India with offline-first Room database, INR currency, category insights, and backup/export.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
