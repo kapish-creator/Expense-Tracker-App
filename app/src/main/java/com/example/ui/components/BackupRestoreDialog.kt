@@ -16,9 +16,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.AccountBalanceWallet
 import androidx.compose.material.icons.rounded.DeleteForever
 import androidx.compose.material.icons.rounded.FileDownload
 import androidx.compose.material.icons.rounded.FileUpload
+import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.Security
 import androidx.compose.material.icons.rounded.TableChart
 import androidx.compose.material3.AlertDialog
@@ -51,7 +53,9 @@ fun BackupRestoreDialog(
     onExportCsv: (Uri) -> Unit,
     onExportBackup: (Uri) -> Unit,
     onRestore: (Uri) -> Unit,
-    onClearAll: () -> Unit
+    onClearAll: () -> Unit,
+    onManagePin: () -> Unit = {},
+    onSetBalance: () -> Unit = {}
 ) {
     var showClearConfirmation by remember { mutableStateOf(false) }
 
@@ -123,6 +127,46 @@ fun BackupRestoreDialog(
                             )
                         }
                     }
+                }
+
+                // Monthly Limit Setting Button
+                OutlinedButton(
+                    onClick = {
+                        onDismiss()
+                        onSetBalance()
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("dialog_set_balance_button"),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.AccountBalanceWallet,
+                        contentDescription = "Balance",
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Set / Adjust Monthly Spending Limit")
+                }
+
+                // App PIN Lock Button
+                OutlinedButton(
+                    onClick = {
+                        onDismiss()
+                        onManagePin()
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("dialog_manage_pin_button"),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Lock,
+                        contentDescription = "App Lock",
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("App Lock & PIN Security")
                 }
 
                 // CSV Export Button

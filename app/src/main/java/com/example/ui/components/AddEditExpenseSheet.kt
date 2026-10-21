@@ -46,7 +46,9 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -73,13 +75,13 @@ import java.util.Calendar
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun AddEditExpenseSheet(
-    sheetState: SheetState,
     expenseToEdit: ExpenseEntity?,
     onDismiss: () -> Unit,
     onSave: (amount: Double, category: String, dateMillis: Long, paymentMethod: String, note: String) -> Unit,
     onDelete: (ExpenseEntity) -> Unit
 ) {
     val isDark = isSystemInDarkTheme()
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     // Form states
     var amountText by remember {

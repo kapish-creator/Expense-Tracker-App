@@ -52,6 +52,9 @@ import com.example.ui.ExpenseViewModel
 import com.example.ui.components.CategoryDonutChart
 import com.example.util.CurrencyUtils
 import com.example.util.DateUtils
+import com.example.ui.components.MonthlyBalanceCard
+import androidx.compose.material.icons.rounded.Lock
+import androidx.compose.material.icons.rounded.AccountBalanceWallet
 import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -65,6 +68,9 @@ fun DashboardScreen(
     val todayTotal by viewModel.todayTotal.collectAsStateWithLifecycle()
     val currentMonthTotal by viewModel.currentMonthTotal.collectAsStateWithLifecycle()
     val monthCategorySpends by viewModel.currentMonthCategorySpend.collectAsStateWithLifecycle()
+    val allExpensesList by viewModel.allExpenses.collectAsStateWithLifecycle()
+    val monthlyBalance by viewModel.monthlyBalance.collectAsStateWithLifecycle()
+    val isPinEnabled by viewModel.isPinEnabled.collectAsStateWithLifecycle()
 
     val currentMonthLabel = DateUtils.formatMonthYear(System.currentTimeMillis())
     val todayLabel = DateUtils.formatFullDate(System.currentTimeMillis())
@@ -202,6 +208,63 @@ fun DashboardScreen(
                 }
             }
         }
+
+        if (allExpensesList.isEmpty()) {
+            Spacer(modifier = Modifier.height(16.dp))
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("dashboard_welcome_card"),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.45f)
+                )
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = "👋 Welcome to MySpend!",
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                        color = MaterialTheme.colorScheme.onTertiaryContainer
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Your offline personal expense tracker for India. Tap below to see the app in action with sample data or add your own:",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.85f)
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        androidx.compose.material3.Button(
+                            onClick = { viewModel.openAddExpense() },
+                            modifier = Modifier.weight(1f).testTag("welcome_add_button"),
+                            shape = RoundedCornerShape(10.dp)
+                        ) {
+                            Text("+ Add Expense")
+                        }
+                        androidx.compose.material3.OutlinedButton(
+                            onClick = { viewModel.loadSampleExpenses() },
+                            modifier = Modifier.weight(1f).testTag("welcome_sample_button"),
+                            shape = RoundedCornerShape(10.dp)
+                        ) {
+                            Text("⚡ Try Demo Data")
+                        }
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Monthly Spending Balance & Real-time Progress Bar Card
+        MonthlyBalanceCard(
+            spentAmount = currentMonthTotal,
+            balanceLimit = monthlyBalance,
+            onEditBalance = { viewModel.openSetBalanceDialog() },
+            modifier = Modifier.testTag("dashboard_balance_card")
+        )
 
         Spacer(modifier = Modifier.height(20.dp))
 
@@ -388,6 +451,72 @@ fun DashboardScreen(
                     )
                     Text(
                         text = "Trends & comparisons",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // App Lock (PIN) Quick Card
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(18.dp))
+                .clickable { viewModel.openManagePinDialog() }
+                .testTag("quick_app_lock_card"),
+            shape = RoundedCornerShape(18.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
+            )
+        ) {
+            Row(
+                modifier = Modifier.padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f), CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Lock,
+                        contentDescription = "App Lock",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.width(14.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = "App PIN Lock",
+                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Box(
+                            modifier = Modifier
+                                .background(
+                                    if (isPinEnabled) Color(0xFF10B981).copy(alpha = 0.15f)
+                                    else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f),
+                                    RoundedCornerShape(6.dp)
+                                )
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                        ) {
+                            Text(
+                                text = if (isPinEnabled) "Active" else "Off",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (isPinEnabled) Color(0xFF059669) else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            )
+                        }
+                    }
+                    Text(
+                        text = if (isPinEnabled) "Tap to change or turn off your 4-digit PIN" else "Set up a 4-digit PIN to secure your expense data",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

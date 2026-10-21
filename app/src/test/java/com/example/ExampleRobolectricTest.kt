@@ -94,4 +94,36 @@ class ExampleRobolectricTest {
         val parsed = CurrencyUtils.parseAmount("₹ 1,250.00")
         assertEquals(1250.0, parsed ?: 0.0, 0.001)
     }
+
+    @Test
+    fun `test PreferenceManager PIN lock and Monthly Balance`() {
+        val prefManager = com.example.data.local.PreferenceManager(context)
+
+        // PIN tests
+        prefManager.disablePin()
+        org.junit.Assert.assertFalse(prefManager.isPinEnabled)
+
+        prefManager.setPin("4321")
+        assertTrue(prefManager.isPinEnabled)
+        assertTrue(prefManager.verifyPin("4321"))
+        org.junit.Assert.assertFalse(prefManager.verifyPin("0000"))
+
+        prefManager.disablePin()
+        org.junit.Assert.assertFalse(prefManager.isPinEnabled)
+
+        // Monthly balance tests
+        prefManager.monthlyBalance = 3000.0
+        assertEquals(3000.0, prefManager.monthlyBalance, 0.001)
+
+        prefManager.monthlyBalance = 5000.0
+        assertEquals(5000.0, prefManager.monthlyBalance, 0.001)
+    }
+
+    @Test
+    fun `test MainActivity launches successfully`() {
+        val controller = org.robolectric.Robolectric.buildActivity(MainActivity::class.java)
+        controller.setup()
+        val activity = controller.get()
+        assertNotNull(activity)
+    }
 }

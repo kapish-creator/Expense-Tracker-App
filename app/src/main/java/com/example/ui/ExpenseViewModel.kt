@@ -92,6 +92,23 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
     private val _showAddEditSheet = MutableStateFlow(false)
     val showAddEditSheet: StateFlow<Boolean> = _showAddEditSheet.asStateFlow()
 
+    private val preferenceManager = com.example.data.local.PreferenceManager(application)
+
+    private val _isPinEnabled = MutableStateFlow(preferenceManager.isPinEnabled)
+    val isPinEnabled: StateFlow<Boolean> = _isPinEnabled.asStateFlow()
+
+    private val _isAppLocked = MutableStateFlow(preferenceManager.isPinEnabled)
+    val isAppLocked: StateFlow<Boolean> = _isAppLocked.asStateFlow()
+
+    private val _monthlyBalance = MutableStateFlow(preferenceManager.monthlyBalance)
+    val monthlyBalance: StateFlow<Double> = _monthlyBalance.asStateFlow()
+
+    private val _showSetBalanceDialog = MutableStateFlow(false)
+    val showSetBalanceDialog: StateFlow<Boolean> = _showSetBalanceDialog.asStateFlow()
+
+    private val _showManagePinDialog = MutableStateFlow(false)
+    val showManagePinDialog: StateFlow<Boolean> = _showManagePinDialog.asStateFlow()
+
     private val _showBackupDialog = MutableStateFlow(false)
     val showBackupDialog: StateFlow<Boolean> = _showBackupDialog.asStateFlow()
 
@@ -381,6 +398,69 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
         _showBackupDialog.value = false
     }
 
+    // Monthly Balance Controls
+    fun openSetBalanceDialog() {
+        _showSetBalanceDialog.value = true
+    }
+
+    fun closeSetBalanceDialog() {
+        _showSetBalanceDialog.value = false
+    }
+
+    fun saveMonthlyBalance(amount: Double) {
+        preferenceManager.monthlyBalance = amount
+        _monthlyBalance.value = amount
+        closeSetBalanceDialog()
+        viewModelScope.launch {
+            _userMessage.emit("Monthly balance limit set to ${com.example.util.CurrencyUtils.formatInr(amount)}")
+        }
+    }
+
+    // PIN Lock Controls
+    fun openManagePinDialog() {
+        _showManagePinDialog.value = true
+    }
+
+    fun closeManagePinDialog() {
+        _showManagePinDialog.value = false
+    }
+
+    fun verifyPin(pin: String): Boolean {
+        return preferenceManager.verifyPin(pin)
+    }
+
+    fun unlockApp(pin: String): Boolean {
+        val valid = preferenceManager.verifyPin(pin)
+        if (valid) {
+            _isAppLocked.value = false
+        }
+        return valid
+    }
+
+    fun lockApp() {
+        if (_isPinEnabled.value) {
+            _isAppLocked.value = true
+        }
+    }
+
+    fun setNewPin(pin: String) {
+        preferenceManager.setPin(pin)
+        _isPinEnabled.value = true
+        _isAppLocked.value = false
+        viewModelScope.launch {
+            _userMessage.emit("App PIN lock enabled successfully")
+        }
+    }
+
+    fun disablePin() {
+        preferenceManager.disablePin()
+        _isPinEnabled.value = false
+        _isAppLocked.value = false
+        viewModelScope.launch {
+            _userMessage.emit("App PIN lock turned off")
+        }
+    }
+
     // CRUD Actions
     fun saveExpense(
         amount: Double,
@@ -470,6 +550,50 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
         viewModelScope.launch {
             repository.clearAll()
             _userMessage.emit("All expense records cleared")
+        }
+    }
+
+    fun loadSampleExpenses() {
+        viewModelScope.launch {
+            val now = System.currentTimeMillis()
+            val dayMillis = 24 * 3600 * 1000L
+            repository.addExpense(
+                ExpenseEntity(
+                    amount = 80.0,
+                    category = ExpenseCategory.FOOD.title,
+                    dateMillis = now,
+                    paymentMethod = PaymentMethod.UPI.title,
+                    note = "Masala Chai & Samosa"
+                )
+            )
+            repository.addExpense(
+                ExpenseEntity(
+                    amount = 250.0,
+                    category = ExpenseCategory.TRAVEL.title,
+                    dateMillis = now,
+                    paymentMethod = PaymentMethod.CASH.title,
+                    note = "Auto Rickshaw"
+                )
+            )
+            repository.addExpense(
+                ExpenseEntity(
+                    amount = 850.0,
+                    category = ExpenseCategory.SHOPPING.title,
+                    dateMillis = now,
+                    paymentMethod = PaymentMethod.UPI.title,
+                    note = "Groceries & Vegetables"
+                )
+            )
+            repository.addExpense(
+                ExpenseEntity(
+                    amount = 1499.0,
+                    category = ExpenseCategory.BILLS.title,
+                    dateMillis = now - (2 * dayMillis),
+                    paymentMethod = PaymentMethod.BANK_TRANSFER.title,
+                    note = "Broadband WiFi bill"
+                )
+            )
+            _userMessage.emit("Sample expenses loaded! You can edit or delete them anytime.")
         }
     }
 }

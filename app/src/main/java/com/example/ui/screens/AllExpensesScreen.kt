@@ -404,14 +404,26 @@ fun AllExpensesScreen(
                     Spacer(modifier = Modifier.height(20.dp))
 
                     if (allExpenses.isEmpty()) {
-                        Button(
-                            onClick = { viewModel.openAddExpense() },
-                            shape = RoundedCornerShape(12.dp),
-                            modifier = Modifier.testTag("add_first_expense_button")
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
-                            Icon(imageVector = Icons.Rounded.Add, contentDescription = null)
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text("Add First Expense")
+                            Button(
+                                onClick = { viewModel.openAddExpense() },
+                                shape = RoundedCornerShape(12.dp),
+                                modifier = Modifier.testTag("add_first_expense_button")
+                            ) {
+                                Icon(imageVector = Icons.Rounded.Add, contentDescription = null)
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text("Add First Expense")
+                            }
+                            androidx.compose.material3.OutlinedButton(
+                                onClick = { viewModel.loadSampleExpenses() },
+                                shape = RoundedCornerShape(12.dp),
+                                modifier = Modifier.testTag("load_demo_expenses_button")
+                            ) {
+                                Text("⚡ Load Demo Expenses")
+                            }
                         }
                     } else if (hasActiveFilters) {
                         Button(
