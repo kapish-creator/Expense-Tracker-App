@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AccountBalanceWallet
+import androidx.compose.material.icons.rounded.Alarm
 import androidx.compose.material.icons.rounded.DeleteForever
 import androidx.compose.material.icons.rounded.FileDownload
 import androidx.compose.material.icons.rounded.FileUpload
@@ -55,7 +56,8 @@ fun BackupRestoreDialog(
     onRestore: (Uri) -> Unit,
     onClearAll: () -> Unit,
     onManagePin: () -> Unit = {},
-    onSetBalance: () -> Unit = {}
+    onSetBalance: () -> Unit = {},
+    onSetAlarm: () -> Unit = {}
 ) {
     var showClearConfirmation by remember { mutableStateOf(false) }
 
@@ -167,6 +169,26 @@ fun BackupRestoreDialog(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text("App Lock & PIN Security")
+                }
+
+                // Daily Expense Reminder Alarm Button
+                OutlinedButton(
+                    onClick = {
+                        onDismiss()
+                        onSetAlarm()
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("dialog_set_alarm_button"),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Alarm,
+                        contentDescription = "Daily Alarm",
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Daily Expense Reminder Alarm")
                 }
 
                 // CSV Export Button

@@ -54,7 +54,8 @@ import com.example.util.CurrencyUtils
 import com.example.util.DateUtils
 import com.example.ui.components.MonthlyBalanceCard
 import androidx.compose.material.icons.rounded.Lock
-import androidx.compose.material.icons.rounded.AccountBalanceWallet
+import androidx.compose.material.icons.rounded.Alarm
+import androidx.compose.material.icons.rounded.NotificationsActive
 import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -71,6 +72,9 @@ fun DashboardScreen(
     val allExpensesList by viewModel.allExpenses.collectAsStateWithLifecycle()
     val monthlyBalance by viewModel.monthlyBalance.collectAsStateWithLifecycle()
     val isPinEnabled by viewModel.isPinEnabled.collectAsStateWithLifecycle()
+    val isAlarmEnabled by viewModel.isAlarmEnabled.collectAsStateWithLifecycle()
+    val alarmHour by viewModel.alarmHour.collectAsStateWithLifecycle()
+    val alarmMinute by viewModel.alarmMinute.collectAsStateWithLifecycle()
 
     val currentMonthLabel = DateUtils.formatMonthYear(System.currentTimeMillis())
     val todayLabel = DateUtils.formatFullDate(System.currentTimeMillis())
@@ -517,6 +521,82 @@ fun DashboardScreen(
                     }
                     Text(
                         text = if (isPinEnabled) "Tap to change or turn off your 4-digit PIN" else "Set up a 4-digit PIN to secure your expense data",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // Daily Expense Reminder Alarm Card
+        val amPm = if (alarmHour >= 12) "PM" else "AM"
+        val displayHour = when {
+            alarmHour == 0 -> 12
+            alarmHour > 12 -> alarmHour - 12
+            else -> alarmHour
+        }
+        val displayMinute = if (alarmMinute < 10) "0$alarmMinute" else "$alarmMinute"
+        val alarmTimeFormatted = "$displayHour:$displayMinute $amPm"
+
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(18.dp))
+                .clickable { viewModel.openAlarmDialog() }
+                .testTag("quick_daily_alarm_card"),
+            shape = RoundedCornerShape(18.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
+            )
+        ) {
+            Row(
+                modifier = Modifier.padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .background(MaterialTheme.colorScheme.secondary.copy(alpha = 0.12f), CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Alarm,
+                        contentDescription = "Daily Alarm",
+                        tint = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.width(14.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = "Daily Expense Alarm",
+                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Box(
+                            modifier = Modifier
+                                .background(
+                                    if (isAlarmEnabled) Color(0xFF10B981).copy(alpha = 0.15f)
+                                    else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f),
+                                    RoundedCornerShape(6.dp)
+                                )
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                        ) {
+                            Text(
+                                text = if (isAlarmEnabled) "$alarmTimeFormatted • Active" else "Off",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (isAlarmEnabled) Color(0xFF059669) else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            )
+                        }
+                    }
+                    Text(
+                        text = if (isAlarmEnabled) "Daily reminder alarm set for $alarmTimeFormatted to add today's spend"
+                        else "Set up a daily alarm (e.g. 8:00 PM) to sound and remind you to add expenses",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

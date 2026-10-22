@@ -120,6 +120,24 @@ class ExampleRobolectricTest {
     }
 
     @Test
+    fun `test PreferenceManager daily alarm settings`() {
+        val prefManager = com.example.data.local.PreferenceManager(context)
+        prefManager.isAlarmEnabled = false
+        org.junit.Assert.assertFalse(prefManager.isAlarmEnabled)
+
+        prefManager.isAlarmEnabled = true
+        prefManager.alarmHour = 20
+        prefManager.alarmMinute = 30
+
+        assertTrue(prefManager.isAlarmEnabled)
+        assertEquals(20, prefManager.alarmHour)
+        assertEquals(30, prefManager.alarmMinute)
+
+        com.example.util.AlarmScheduler.scheduleDailyAlarm(context, 20, 30)
+        com.example.util.AlarmScheduler.cancelAlarm(context)
+    }
+
+    @Test
     fun `test MainActivity launches successfully`() {
         val controller = org.robolectric.Robolectric.buildActivity(MainActivity::class.java)
         controller.setup()

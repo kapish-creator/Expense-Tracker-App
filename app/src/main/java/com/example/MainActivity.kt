@@ -1,10 +1,12 @@
 package com.example
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -42,7 +44,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -50,10 +51,10 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.ui.ExpenseViewModel
 import com.example.ui.components.AddEditExpenseSheet
 import com.example.ui.components.BackupRestoreDialog
+import com.example.ui.components.DailyAlarmDialog
 import com.example.ui.components.ManagePinDialog
 import com.example.ui.components.PinLockScreen
 import com.example.ui.components.SetBalanceDialog
@@ -61,8 +62,8 @@ import com.example.ui.screens.AllExpensesScreen
 import com.example.ui.screens.DashboardScreen
 import com.example.ui.screens.ReportsScreen
 import com.example.ui.theme.MyApplicationTheme
+import com.example.util.AlarmScheduler
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
 
 enum class AppScreen(val title: String, val icon: ImageVector, val tag: String) {
     DASHBOARD("Dashboard", Icons.Rounded.Dashboard, "nav_dashboard"),
@@ -71,20 +72,37 @@ enum class AppScreen(val title: String, val icon: ImageVector, val tag: String) 
 }
 
 class MainActivity : ComponentActivity() {
+    private val viewModel: ExpenseViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        handleNotificationIntent(intent)
+
         setContent {
             MyApplicationTheme {
-                MySpendApp()
+                MySpendApp(viewModel = viewModel)
             }
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleNotificationIntent(intent)
+    }
+
+    private fun handleNotificationIntent(intent: Intent?) {
+        if (intent?.getBooleanExtra(AlarmScheduler.EXTRA_OPEN_ADD_EXPENSE, false) == true) {
+            viewModel.openAddExpense()
         }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MySpendApp(viewModel: ExpenseViewModel = viewModel()) {
+fun MySpendApp(viewModel: ExpenseViewModel) {
     var currentScreen by remember { mutableStateOf(AppScreen.DASHBOARD) }
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -97,6 +115,10 @@ fun MySpendApp(viewModel: ExpenseViewModel = viewModel()) {
     val showBackupDialog by viewModel.showBackupDialog.collectAsStateWithLifecycle()
     val showSetBalanceDialog by viewModel.showSetBalanceDialog.collectAsStateWithLifecycle()
     val showManagePinDialog by viewModel.showManagePinDialog.collectAsStateWithLifecycle()
+    val showAlarmDialog by viewModel.showAlarmDialog.collectAsStateWithLifecycle()
+    val isAlarmEnabled by viewModel.isAlarmEnabled.collectAsStateWithLifecycle()
+    val alarmHour by viewModel.alarmHour.collectAsStateWithLifecycle()
+    val alarmMinute by viewModel.alarmMinute.collectAsStateWithLifecycle()
 
     // Collect snackbar messages
     LaunchedEffect(Unit) {
@@ -109,7 +131,7 @@ fun MySpendApp(viewModel: ExpenseViewModel = viewModel()) {
     if (isAppLocked) {
         PinLockScreen(
             onVerifyPin = { pin -> viewModel.unlockApp(pin) },
-            onSuccess = { /* state handled in unlockApp */ }
+            onSuccess = { /* unlocked */ }
         )
         return
     }
@@ -288,6 +310,19 @@ fun MySpendApp(viewModel: ExpenseViewModel = viewModel()) {
         )
     }
 
+    // Daily Reminder Alarm Dialog
+    if (showAlarmDialog) {
+        DailyAlarmDialog(
+            isAlarmEnabled = isAlarmEnabled,
+            initialHour = alarmHour,
+            initialMinute = alarmMinute,
+            onDismiss = { viewModel.closeAlarmDialog() },
+            onSaveAlarm = { enabled, hour, minute ->
+                viewModel.setDailyAlarm(enabled, hour, minute)
+            }
+        )
+    }
+
     // Data & Privacy / Settings Dialog
     if (showBackupDialog) {
         BackupRestoreDialog(
@@ -297,7 +332,8 @@ fun MySpendApp(viewModel: ExpenseViewModel = viewModel()) {
             onRestore = { uri -> viewModel.restoreBackup(uri) },
             onClearAll = { viewModel.clearAllData() },
             onManagePin = { viewModel.openManagePinDialog() },
-            onSetBalance = { viewModel.openSetBalanceDialog() }
+            onSetBalance = { viewModel.openSetBalanceDialog() },
+            onSetAlarm = { viewModel.openAlarmDialog() }
         )
     }
 }

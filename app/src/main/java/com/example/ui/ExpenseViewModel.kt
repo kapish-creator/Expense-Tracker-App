@@ -112,6 +112,18 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
     private val _showBackupDialog = MutableStateFlow(false)
     val showBackupDialog: StateFlow<Boolean> = _showBackupDialog.asStateFlow()
 
+    private val _isAlarmEnabled = MutableStateFlow(preferenceManager.isAlarmEnabled)
+    val isAlarmEnabled: StateFlow<Boolean> = _isAlarmEnabled.asStateFlow()
+
+    private val _alarmHour = MutableStateFlow(preferenceManager.alarmHour)
+    val alarmHour: StateFlow<Int> = _alarmHour.asStateFlow()
+
+    private val _alarmMinute = MutableStateFlow(preferenceManager.alarmMinute)
+    val alarmMinute: StateFlow<Int> = _alarmMinute.asStateFlow()
+
+    private val _showAlarmDialog = MutableStateFlow(false)
+    val showAlarmDialog: StateFlow<Boolean> = _showAlarmDialog.asStateFlow()
+
     private val _userMessage = MutableSharedFlow<String>()
     val userMessage: SharedFlow<String> = _userMessage.asSharedFlow()
 
@@ -458,6 +470,44 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
         _isAppLocked.value = false
         viewModelScope.launch {
             _userMessage.emit("App PIN lock turned off")
+        }
+    }
+
+    // Daily Reminder Alarm Controls
+    fun openAlarmDialog() {
+        _showAlarmDialog.value = true
+    }
+
+    fun closeAlarmDialog() {
+        _showAlarmDialog.value = false
+    }
+
+    fun setDailyAlarm(enabled: Boolean, hour: Int, minute: Int) {
+        preferenceManager.isAlarmEnabled = enabled
+        preferenceManager.alarmHour = hour
+        preferenceManager.alarmMinute = minute
+
+        _isAlarmEnabled.value = enabled
+        _alarmHour.value = hour
+        _alarmMinute.value = minute
+
+        if (enabled) {
+            com.example.util.AlarmScheduler.scheduleDailyAlarm(getApplication(), hour, minute)
+            val amPm = if (hour >= 12) "PM" else "AM"
+            val displayHour = when {
+                hour == 0 -> 12
+                hour > 12 -> hour - 12
+                else -> hour
+            }
+            val displayMinute = if (minute < 10) "0$minute" else "$minute"
+            viewModelScope.launch {
+                _userMessage.emit("Daily reminder alarm set for $displayHour:$displayMinute $amPm")
+            }
+        } else {
+            com.example.util.AlarmScheduler.cancelAlarm(getApplication())
+            viewModelScope.launch {
+                _userMessage.emit("Daily reminder alarm turned off")
+            }
         }
     }
 

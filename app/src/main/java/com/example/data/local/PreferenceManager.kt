@@ -13,6 +13,9 @@ class PreferenceManager(context: Context) {
         private const val KEY_PIN_HASH = "key_pin_hash"
         private const val KEY_PIN_ENABLED = "key_pin_enabled"
         private const val KEY_MONTHLY_BALANCE = "key_monthly_balance"
+        private const val KEY_ALARM_ENABLED = "key_alarm_enabled"
+        private const val KEY_ALARM_HOUR = "key_alarm_hour"
+        private const val KEY_ALARM_MINUTE = "key_alarm_minute"
     }
 
     var isPinEnabled: Boolean
@@ -22,6 +25,18 @@ class PreferenceManager(context: Context) {
     var monthlyBalance: Double
         get() = prefs.getFloat(KEY_MONTHLY_BALANCE, 0f).toDouble()
         set(value) = prefs.edit().putFloat(KEY_MONTHLY_BALANCE, value.toFloat()).apply()
+
+    var isAlarmEnabled: Boolean
+        get() = prefs.getBoolean(KEY_ALARM_ENABLED, false)
+        set(value) = prefs.edit().putBoolean(KEY_ALARM_ENABLED, value).apply()
+
+    var alarmHour: Int
+        get() = prefs.getInt(KEY_ALARM_HOUR, 20) // default 8 PM
+        set(value) = prefs.edit().putInt(KEY_ALARM_HOUR, value).apply()
+
+    var alarmMinute: Int
+        get() = prefs.getInt(KEY_ALARM_MINUTE, 0)
+        set(value) = prefs.edit().putInt(KEY_ALARM_MINUTE, value).apply()
 
     fun setPin(pin: String) {
         val hash = hashPin(pin)

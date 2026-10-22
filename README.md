@@ -13,7 +13,14 @@
 - **One-Tap Quick Lock**: Lock the app immediately via the lock icon in the top app bar.
 - **On-Device Security**: PIN is hashed with SHA-256 and salt locally—never stored in plain text.
 
-### 2. 💳 Monthly Spending Limit & Dynamic Gradient Bar
+### 2. ⏰ Daily Expense Reminder Alarm
+- **Custom Daily Timing**: Set any time (e.g. 8:00 PM, 9:00 PM) for everyday automatic reminder alarms.
+- **Ringing Alarm & Sound**: Plays your phone's notification/alarm ringtone and sound pattern to alert you to log expenses.
+- **Direct Entry Tap**: Tapping the reminder notification automatically opens the app straight into the *Add Expense* screen.
+- **Quick Presets & Testing**: Includes 1-tap presets (7 PM, 8 PM, 9 PM, 10 PM) and a "Test Alarm Now" button.
+- **Reboot Resilient**: Automatically restores scheduled alarms after device restarts via `BootCompletedReceiver`.
+
+### 3. 💳 Monthly Spending Limit & Dynamic Gradient Bar
 - **Adjustable Monthly Balance**: Set and adjust your monthly spending target (e.g., ₹3,000, ₹5,000, or any custom amount in INR).
 - **Real-Time Gradient Progress Bar**:
   - Dynamically calculates spent vs. remaining balance in real time.
@@ -23,13 +30,13 @@
   - Triggers an immediate alert on the Dashboard if expenses exceed the configured balance:  
     `⚠️ Alert: You have exceeded your balance! (₹X over limit)`
 
-### 3. 📊 Dashboard
+### 4. 📊 Dashboard
 - **Today's & Current Month's Spend**: Prominent summary cards formatted in Indian Rupees (`₹`).
 - **Category Donut Chart**: Animated Canvas donut chart representing category-wise spending proportions with legends and percentages.
 - **Quick Actions**: One-tap access to *Add Expense*, *All Expenses*, *Reports*, *PIN Lock*, and *Data & Privacy*.
 - **Clutter-Free**: Strictly omits distracting recent transaction lists from the dashboard.
 
-### 4. ⚡ Fast Expense Entry
+### 5. ⚡ Fast Expense Entry
 - **Minimal Taps**: Large amount entry with automatic decimal handling and quick increment chips (`+₹100`, `+₹200`, `+₹500`, `+₹1000`).
 - **9 Predefined Categories**:
   - 🍕 Food
@@ -45,19 +52,19 @@
 - **Date Selector**: Defaults to Today with quick chips for *Today*, *Yesterday*, and a Material 3 Calendar Picker.
 - **Edit & Delete**: Full editing capabilities with an alert confirmation dialog before deletion.
 
-### 5. 🔍 All Expenses Screen
+### 6. 🔍 All Expenses Screen
 - **Real-Time Search**: Search expenses by note, category, payment method, or amount.
 - **Multi-Filter Chips**: Filter by Date Range (*All Time*, *Today*, *This Week*, *This Month*, *Last Month*), Category, or Payment Method.
 - **Custom Sorting**: Sort by *Newest First*, *Oldest First*, *Amount: High to Low*, or *Amount: Low to High*.
 - **Live Filtered Total**: Sticky header showing total ₹ amount and count for the active search and filter criteria.
 
-### 6. 📈 Reports & Trends
+### 7. 📈 Reports & Trends
 - **Summary Totals**: Daily, weekly, monthly, and all-time recorded expenses.
 - **6-Month Comparison Bar Chart**: Historical monthly spending trends with the current month highlighted.
 - **Category Breakdown**: Ranked list with spend amount, percentage share, transaction counts, and visual progress bars.
 - **Payment Method Distribution**: Spend breakdown across UPI, Cash, Cards, and Net Banking.
 
-### 7. 🔒 Data Privacy, Backup & Offline Storage
+### 8. 🔒 Data Privacy, Backup & Offline Storage
 - **100% Offline**: Powered by an on-device Android Room SQLite database (`myspend_database`).
 - **Data Persistence**: Data survives app restarts, background killing, and phone reboots.
 - **CSV Spreadsheet Export**: Export your complete transaction history to standard `.csv` format via Android Storage Access Framework.
